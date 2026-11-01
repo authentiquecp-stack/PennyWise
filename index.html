@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PennyWise</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#E0A100">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="PennyWise">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%23E0A100'/%3E%3Ctext x='50' y='68' font-size='56' font-weight='800' text-anchor='middle' fill='%2314222B' font-family='sans-serif'%3EP%3C/text%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#EDF1F3;--card:#fff;--ink:#14222B;--mute:#5E6E78;--line:#D9E1E5;--inc:#0F7B5F;--exp:#8A2B5C;--gold:#E0A100;--warn:#B45309;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);color-scheme:light}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10181D;--card:#1A252C;--ink:#E8EEF1;--mute:#93A4AE;--line:#2B3A43;--inc:#38C9A0;--exp:#E57AB0;--gold:#F2B825;--warn:#F0A04B;color-scheme:dark}}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font-family:'Bricolage Grotesque',system-ui,sans-serif;font-size:16px;-webkit-text-size-adjust:100%}
+*{box-sizing:border-box}
+#app{max-width:520px;margin:0 auto;padding:16px 16px 96px}
+h1{font-size:22px;margin:4px 0 12px;font-weight:800}
+h2{font-size:15px;margin:22px 0 8px;font-weight:600;color:var(--mute)}
+.month{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.month button{background:var(--card);border:1px solid var(--line);color:var(--ink);width:40px;height:40px;border-radius:12px;font-size:18px;cursor:pointer}
+.month b{font-size:17px}
+.hero{background:var(--card);border-radius:20px;padding:20px;border:1px solid var(--line)}
+.hero small{color:var(--mute)}
+.left{font-size:44px;font-weight:800;line-height:1.1;margin:4px 0 14px;border-bottom:4px solid var(--gold);display:inline-block;padding-bottom:2px}
+.left.neg{color:var(--exp)}
+.row2{display:flex;gap:12px}
+.row2>div{flex:1}
+.row2 b{display:block;font-size:20px}
+.inc{color:var(--inc)}.exp{color:var(--exp)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:6px 0 2px}
+.bar i{display:block;height:100%;border-radius:6px}
+.item{margin-bottom:14px}.item:last-child{margin-bottom:0}
+.item .t{display:flex;justify-content:space-between;font-size:15px}
+.item .s{font-size:13px;color:var(--mute)}
+.warn{color:var(--warn);font-weight:600}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom,0px)}
+nav div{display:flex;max-width:520px;width:100%}
+nav button{flex:1;background:none;border:0;padding:14px 2px;font:inherit;font-size:13px;color:var(--mute);cursor:pointer}
+nav button.on{color:var(--ink);font-weight:800;box-shadow:inset 0 3px 0 var(--gold)}
+label{display:block;font-size:14px;color:var(--mute);margin:14px 0 6px}
+input,select{width:100%;font:inherit;font-size:16px;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink)}
+.seg{display:flex;gap:8px}
+.seg button{flex:1;padding:12px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+.seg button.on{background:var(--ink);color:var(--bg);font-weight:600}
+.save{width:100%;margin-top:20px;padding:15px;border:0;border-radius:14px;background:var(--gold);color:#14222B;font:inherit;font-weight:800;font-size:17px;cursor:pointer}
+.hist{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.hist:last-child{border:0}
+.hist span{font-size:13px;color:var(--mute);display:block}
+.del{background:none;border:0;color:var(--mute);font-size:20px;padding:6px 10px;cursor:pointer}
+.empty{color:var(--mute);text-align:center;padding:18px 8px}
+.nm{width:55%;border:0;border-bottom:1px dashed var(--mute);border-radius:0;padding:2px 0;background:transparent;font-size:15px}
+.msg{padding:10px 12px;border-radius:14px;margin-bottom:8px;max-width:88%;white-space:pre-wrap;font-size:15px}.msg.me{background:var(--ink);color:var(--bg);margin-left:auto}.msg.ai{background:var(--bg)}
+#alarm{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;padding:24px;z-index:50}#alarm .box{background:var(--card);border-radius:20px;padding:20px;max-width:380px;width:100%;border-top:6px solid var(--warn)}
+.bl{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.bl span{flex:1}.bl input{width:130px}
+svg text{fill:var(--mute);font-size:11px;font-family:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<nav><div id="nav"></div></nav>
+<script>
+var CUR='GH¢',CATS=['Food','Transport','Rent','Airtime and data','Church and giving','Bills','Savings','Other'];
+var S={inc:[],exp:[],bud:{},tot:0,src:['Source 1','Source 2']};
+try{var r=localStorage.getItem('mt1');if(r){var p=JSON.parse(r);if(p&&p.inc)S=p}}catch(e){}
+function save(){try{localStorage.setItem('mt1',JSON.stringify(S))}catch(e){}}
+var tab='home',m=new Date().toISOString().slice(0,7),form={type:'exp'};
+var $=function(i){return document.getElementById(i)};
+function money(n){return CUR+' '+Number(n).toLocaleString('en-GH',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function sum(a,mo){return a.filter(function(x){return x.date.slice(0,7)===mo}).reduce(function(t,x){return t+x.amt},0)}
+function shift(d){var a=m.split('-'),t=new Date(+a[0],+a[1]-1+d,1);m=t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0');draw()}
+function mlabel(mo){var a=mo.split('-');return new Date(+a[0],+a[1]-1,1).toLocaleDateString('en-GB',{month:'long',year:'numeric'})}
+function monthBar(){return '<div class="month"><button onclick="shift(-1)" aria-label="Previous month">‹</button><b>'+mlabel(m)+'</b><button onclick="shift(1)" aria-label="Next month">›</button></div>'}
+function home(){
+ var I=sum(S.inc,m),E=sum(S.exp,m),L=I-E,h='<h1>PennyWise</h1>'+monthBar();
+ h+='<div class="hero"><small>Left this month</small><br><span class="left'+(L<0?' neg':'')+'">'+money(L)+'</span><div class="row2"><div><small>Income</small><b class="inc">'+money(I)+'</b></div><div><small>Spent</small><b class="exp">'+money(E)+'</b></div></div></div>';
+ h+='<h2>Income by source (tap a name to rename)</h2><div class="card">';
+ S.src.forEach(function(n,k){var v=S.inc.filter(function(x){return x.date.slice(0,7)===m&&x.src===k}).reduce(function(t,x){return t+x.amt},0);
+  h+='<div class="item"><div class="t"><input class="nm" type="text" aria-label="Rename income source" value="'+esc(n)+'" onchange="setS('+k+',this.value)"><b>'+money(v)+'</b></div><div class="bar"><i style="width:'+(I?v/I*100:0)+'%;background:var(--inc)"></i></div></div>'});
+ h+='</div><h2>Spending by category</h2><div class="card">';
+ var any=false;
+ CATS.forEach(function(c){var v=S.exp.filter(function(x){return x.date.slice(0,7)===m&&x.cat===c}).reduce(function(t,x){return t+x.amt},0),b=S.bud[c]||0;
+  if(!v&&!b)return;any=true;var pct=b?v/b*100:(E?v/E*100:0),over=b&&v>b,near=b&&!over&&pct>=80;
+  h+='<div class="item"><div class="t"><span>'+c+'</span><b>'+money(v)+'</b></div><div class="bar"><i style="width:'+Math.min(pct,100)+'%;background:'+(over?'var(--warn)':'var(--exp)')+'"></i></div><div class="s">'+(b?(over?'<span class="warn">Over budget by '+money(v-b)+'</span>':(near?'<span class="warn">'+Math.round(pct)+'% of '+money(b)+' used</span>':Math.round(pct)+'% of '+money(b)+' used')):'No budget set')+'</div></div>'});
+ if(!any)h+='<div class="empty">No spending yet. Tap Add to log your first expense.</div>';
+ h+='</div><h2>Last 6 months</h2><div class="card">'+chart()+'</div>';
+ return h}
+function chart(){
+ var ms=[],a=m.split('-'),i;for(i=5;i>=0;i--){var t=new Date(+a[0],+a[1]-1-i,1);ms.push(t.getFullYear()+'-'+String(t.getMonth()+1).padStart(2,'0'))}
+ var d=ms.map(function(x){return[sum(S.inc,x),sum(S.exp,x),x]}),mx=Math.max.apply(null,d.map(function(x){return Math.max(x[0],x[1])}).concat([1]));
+ var s='<svg viewBox="0 0 320 150" width="100%" role="img" aria-label="Income and spending for the last six months">';
+ d.forEach(function(x,k){var X=k*53+8,h1=x[0]/mx*100,h2=x[1]/mx*100;
+  s+='<rect x="'+X+'" y="'+(110-h1)+'" width="20" height="'+h1+'" rx="3" fill="var(--inc)"/><rect x="'+(X+22)+'" y="'+(110-h2)+'" width="20" height="'+h2+'" rx="3" fill="var(--exp)"/><text x="'+(X+21)+'" y="130" text-anchor="middle">'+new Date(+x[2].slice(0,4),+x[2].slice(5)-1,1).toLocaleDateString('en-GB',{month:'short'})+'</text>'});
+ return s+'</svg><div class="s" style="font-size:13px;color:var(--mute)"><span class="inc">■</span> Income &nbsp; <span class="exp">■</span> Spending</div>'}
+function add(){
+ var e=form.type==='exp',h='<h1>Add entry</h1><div class="seg"><button class="'+(e?'on':'')+'" onclick="form.type=\'exp\';draw()">Expense</button><button class="'+(!e?'on':'')+'" onclick="form.type=\'inc\';draw()">Income</button></div>';
+ h+='<label for="amt">Amount ('+CUR+')</label><input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">';
+ h+='<label for="cat">'+(e?'Category':'Income source')+'</label><select id="cat">'+(e?CATS.map(function(c){return'<option>'+c+'</option>'}):S.src.map(function(c,k){return'<option value="'+k+'">'+esc(c)+'</option>'})).join('')+'</select>';
+ h+='<label for="dt">Date</label><input id="dt" type="date" value="'+new Date().toISOString().slice(0,10)+'">';
+ h+='<label for="nt">Note (optional)</label><input id="nt" type="text" placeholder="What was it for?">';
+ h+='<button class="save" onclick="addEntry()">Save '+(e?'expense':'income')+'</button><div id="msg" class="empty" role="status"></div>';
+ return h}
+function addEntry(){
+ var a=parseFloat($('amt').value);if(!(a>0)){$('msg').textContent='Enter an amount greater than zero.';return}
+ var o={id:Date.now(),amt:a,date:$('dt').value,note:$('nt').value.trim()};
+ var al=[];if(form.type==='exp'){o.cat=$('cat').value;al=logExp(o)}else{o.src=+$('cat').value;S.inc.push(o)}
+ save();m=o.date.slice(0,7);tab='home';draw();showAlerts(al)}
+function hist(){
+ var all=S.inc.map(function(x){return Object.assign({k:'i'},x)}).concat(S.exp.map(function(x){return Object.assign({k:'e'},x)})).filter(function(x){return x.date.slice(0,7)===m}).sort(function(a,b){return a.date<b.date?1:-1});
+ var h=monthBar()+'<h1>History</h1><div class="card">';
+ if(!all.length)h+='<div class="empty">Nothing logged for this month.</div>';
+ all.forEach(function(x){h+='<div class="hist"><div>'+(x.k==='i'?esc(S.src[x.src]||'Income'):x.cat)+'<span>'+x.date+(x.note?' · '+esc(x.note):'')+'</span></div><div><b class="'+(x.k==='i'?'inc':'exp')+'">'+(x.k==='i'?'+':'−')+money(x.amt)+'</b><button class="del" aria-label="Delete entry" onclick="del('+x.id+')">×</button></div></div>'});
+ return h+'</div>'}
+function del(id){S.inc=S.inc.filter(function(x){return x.id!==id});S.exp=S.exp.filter(function(x){return x.id!==id});save();draw()}
+function budgets(){
+ var h='<h1>Budgets</h1><div class="card"><div class="s" style="font-size:13px;color:var(--mute);margin-bottom:12px">Set a monthly limit for each category and for total spending. An alarm with sound sounds when you reach 80% and 100% of a limit. Leave a box empty for no limit.</div><div class="bl"><span><b>Total spending</b></span><input type="number" inputmode="decimal" min="0" aria-label="Total monthly spending limit" value="'+(S.tot||'')+'" onchange="setT(this.value)"></div>';
+ CATS.forEach(function(c,k){h+='<div class="bl"><span>'+c+'</span><input type="number" inputmode="decimal" min="0" aria-label="'+c+' budget" value="'+(S.bud[c]||'')+'" onchange="setB('+k+',this.value)"></div>'});
+ h+='</div><h2>Income source names</h2><div class="card">';
+ S.src.forEach(function(n,k){h+='<div class="bl"><span>Source '+(k+1)+'</span><input type="text" aria-label="Source '+(k+1)+' name" value="'+esc(n)+'" onchange="setS('+k+',this.value)"></div>'});
+ return h+'</div><h2>Add PennyWise to your home screen</h2><div class="card"><div class="item"><b>Android (Chrome)</b><div class="s">Open this page, tap the three dot menu, then Add to Home screen.</div></div><div class="item"><b>iPhone (Safari)</b><div class="s">Open this page, tap Share, then Add to Home Screen.</div></div></div><p class="empty">Your entries are stored in the browser you use, so always open PennyWise from the same one. The AI chat needs the page to be opened through Claude.</p>'}
+function setB(k,v){var n=parseFloat(v);if(n>0)S.bud[CATS[k]]=n;else delete S.bud[CATS[k]];save()}
+function setS(k,v){S.src[k]=v.trim()||('Source '+(k+1));save()}
+function setT(v){var n=parseFloat(v);S.tot=n>0?n:0;save()}
+function lim(n,a,z,b){if(!b)return[];if(a>=b)return[n+': you are over your limit of '+money(b)+' by '+money(z-b)+'.'];if(z>=b)return[n+': you have reached your limit of '+money(b)+'.'];if(a<b*.8&&z>=b*.8)return[n+': you have used 80% of your '+money(b)+' limit.'];return[]}
+function logExp(o){var mo=o.date.slice(0,7),tb=sum(S.exp,mo),cb=S.exp.filter(function(x){return x.date.slice(0,7)===mo&&x.cat===o.cat}).reduce(function(t,x){return t+x.amt},0);S.exp.push(o);return lim(o.cat,cb,cb+o.amt,S.bud[o.cat]||0).concat(lim('Total spending',tb,tb+o.amt,S.tot||0))}
+function beep(){try{var c=new(window.AudioContext||window.webkitAudioContext)(),k;for(k=0;k<3;k++){var o=c.createOscillator(),g=c.createGain();o.type='square';o.frequency.value=880;g.gain.value=.15;o.connect(g);g.connect(c.destination);o.start(c.currentTime+k*.35);o.stop(c.currentTime+k*.35+.2)}}catch(e){}}
+function showAlerts(l){if(!l.length)return;beep();try{navigator.vibrate&&navigator.vibrate([300,150,300])}catch(e){}var d=document.createElement('div');d.id='alarm';d.setAttribute('role','alertdialog');d.innerHTML='<div class="box"><h1>Limit alarm</h1>'+l.map(function(x){return'<p>'+esc(x)+'</p>'}).join('')+'<button class="save" onclick="this.closest(\'#alarm\').remove()">Got it</button></div>';document.body.appendChild(d)}
+var chatLog=[];
+function chat(){var h='<h1>Ask AI</h1><div class="card" style="min-height:160px">';if(!chatLog.length)h+='<div class="empty">Log an expense by typing it, for example “Spent 35 on food today” or “Received 800 from Source 1”. You can also ask questions like “How much have I spent on transport this month?”</div>';chatLog.forEach(function(x){h+='<div class="msg '+x.r+'">'+esc(x.t)+'</div>'});return h+'</div><div class="bl" style="margin-top:12px"><input id="q" type="text" style="flex:1;width:auto" placeholder="Type a message" aria-label="Message" onkeydown="if(event.key===\'Enter\')send()"><button class="save" style="width:90px;margin:0;padding:12px" onclick="send()">Send</button></div>'}
+async function send(){var q=$('q').value.trim();if(!q)return;var hist=chatLog.slice(-6).map(function(x){return(x.r==='me'?'User: ':'Assistant: ')+x.t}).join('\n');chatLog.push({r:'me',t:q});chatLog.push({r:'ai',t:'Thinking…'});draw();var i=chatLog.length-1,al=[];
+try{var sm=(window.claude&&window.claude.use)?await window.claude.use('sample'):null;if(!sm){var lr=localLog(q);chatLog[i].t=lr.t;draw();showAlerts(lr.al);return}
+var by={};S.exp.filter(function(x){return x.date.slice(0,7)===m}).forEach(function(x){by[x.cat]=(by[x.cat]||0)+x.amt});
+var ctx={currency:CUR,today:new Date().toISOString().slice(0,10),month:m,categories:CATS,incomeSources:S.src,budgets:S.bud,totalSpendingLimit:S.tot||0,incomeThisMonth:sum(S.inc,m),spentThisMonth:sum(S.exp,m),spentByCategory:by};
+var r=await sm.json('You are the assistant inside a personal money tracker used in Ghana. Currency is GH¢. App data: '+JSON.stringify(ctx)+'\nRecent chat:\n'+hist+'\nUser message: '+q+'\nReply with JSON only, shaped {"reply":string,"entries":[{"type":"expense" or "income","amount":number,"category":one of the categories (expenses only),"sourceIndex":0 or 1 (income only),"date":"YYYY-MM-DD","note":string}]}. Add entries only when the user clearly says they spent or received money, otherwise entries is []. Keep the reply short and friendly, plain text, no markdown, no dashes.');
+var done=[];(r.entries||[]).forEach(function(e,k){var a=parseFloat(e.amount);if(!(a>0))return;var o={id:Date.now()+k,amt:a,date:/^\d{4}-\d{2}-\d{2}$/.test(e.date)?e.date:ctx.today,note:String(e.note||'')};if(e.type==='income'){o.src=e.sourceIndex===1?1:0;S.inc.push(o);done.push('Income '+money(a)+' from '+S.src[o.src])}else{o.cat=CATS.indexOf(e.category)>=0?e.category:'Other';al=al.concat(logExp(o));done.push('Expense '+money(a)+' in '+o.cat)}});
+if(done.length)save();chatLog[i].t=(r.reply||'Done.')+(done.length?'\n\nLogged:\n'+done.join('\n'):'');draw();showAlerts(al)}
+catch(e){chatLog[i].t=e&&e.code==='not_granted'?'Permission for the AI assistant was not granted.':e&&e.code==='rate_limited'?'Too many requests. Please wait a moment and try again.':'Sorry, I could not process that. Please try again.';draw()}
+var qq=$('q');if(qq)qq.focus()}
+function draw(){
+ $('app').innerHTML=tab==='home'?home():tab==='add'?add():tab==='hist'?hist():tab==='chat'?chat():budgets();
+ $('nav').innerHTML=[['home','Overview'],['add','Add'],['chat','Ask AI'],['hist','History'],['bud','Budgets']].map(function(t){return'<button class="'+(tab===t[0]?'on':'')+'" onclick="tab=\''+t[0]+'\';draw();window.scrollTo(0,0)">'+t[1]+'</button>'}).join('')}
+function localLog(q){var al=[],t=q.toLowerCase(),mt=t.match(/(\d[\d,]*\.?\d*)/);if(!mt)return{t:'Try a message like \u201cSpent 35 on food\u201d or \u201cReceived 800 from Source 1\u201d.',al:al};var a=parseFloat(mt[1].replace(/,/g,''));if(!(a>0))return{t:'I could not read the amount.',al:al};var o={id:Date.now(),amt:a,date:new Date().toISOString().slice(0,10),note:q};
+if(/(received|earned|got paid|income|salary|paid me)/.test(t)){var k=0;S.src.forEach(function(n,j){if(t.indexOf(n.toLowerCase())>=0)k=j});o.src=k;S.inc.push(o);save();return{t:'Logged income '+money(a)+' from '+S.src[k]+'.',al:al}}
+var map={Food:['food','lunch','dinner','breakfast','groceries','market','chop'],Transport:['transport','trotro','taxi','uber','bolt','fuel','bus'],Rent:['rent'],'Airtime and data':['airtime','data','credit'],'Church and giving':['church','tithe','offering','giving'],Bills:['bill','electricity','water','ecg'],Savings:['saving','savings']},c='Other';Object.keys(map).forEach(function(n){if(map[n].some(function(w){return t.indexOf(w)>=0}))c=n});o.cat=c;al=logExp(o);save();return{t:'Logged expense '+money(a)+' in '+c+'.',al:al}}
+if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
+draw();
+</script>
+</body>
+</html>
