@@ -101,13 +101,14 @@ function chart(){
   s+='<rect x="'+X+'" y="'+(110-h1)+'" width="20" height="'+h1+'" rx="3" fill="var(--inc)"/><rect x="'+(X+22)+'" y="'+(110-h2)+'" width="20" height="'+h2+'" rx="3" fill="var(--exp)"/><text x="'+(X+21)+'" y="130" text-anchor="middle">'+new Date(+x[2].slice(0,4),+x[2].slice(5)-1,1).toLocaleDateString('en-GB',{month:'short'})+'</text>'});
  return s+'</svg><div class="s" style="font-size:13px;color:var(--mute)"><span class="inc">■</span> Income &nbsp; <span class="exp">■</span> Spending</div>'}
 function add(){
- var e=form.type==='exp',h='<h1>Add entry</h1><div class="seg"><button class="'+(e?'on':'')+'" onclick="form.type=\'exp\';draw()">Expense</button><button class="'+(!e?'on':'')+'" onclick="form.type=\'inc\';draw()">Income</button></div>';
+ var e=form.type==='exp',h='<h1>Add entry</h1><div class="seg"><button class="'+(e?'on':'')+'" onclick="setType(\'exp\')">Expense</button><button class="'+(!e?'on':'')+'" onclick="setType(\'inc\')">Income</button></div>';
  h+='<label for="amt">Amount ('+CUR+')</label><input id="amt" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0.00">';
  h+='<label for="cat">'+(e?'Category':'Income source')+'</label><select id="cat">'+(e?CATS.map(function(c){return'<option>'+c+'</option>'}):S.src.map(function(c,k){return'<option value="'+k+'">'+esc(c)+'</option>'})).join('')+'</select>';
  h+='<label for="dt">Date</label><input id="dt" type="date" value="'+new Date().toISOString().slice(0,10)+'">';
  h+='<label for="nt">Note (optional)</label><input id="nt" type="text" placeholder="What was it for?">';
  h+='<button class="save" onclick="addEntry()">Save '+(e?'expense':'income')+'</button><div id="msg" class="empty" role="status"></div>';
  return h}
+function setType(t){var a=$('amt'),n=$('nt'),d=$('dt'),v=a?a.value:'',nv=n?n.value:'',dv=d?d.value:'';form.type=t;draw();if($('amt')){$('amt').value=v;$('nt').value=nv;if(dv)$('dt').value=dv}}
 function addEntry(){
  var a=parseFloat($('amt').value);if(!(a>0)){$('msg').textContent='Enter an amount greater than zero.';return}
  var o={id:Date.now(),amt:a,date:$('dt').value,note:$('nt').value.trim()};
@@ -147,8 +148,20 @@ var qq=$('q');if(qq)qq.focus()}
 function draw(){
  $('app').innerHTML=tab==='home'?home():tab==='add'?add():tab==='hist'?hist():tab==='chat'?chat():budgets();
  $('nav').innerHTML=[['home','Overview'],['add','Add'],['chat','Ask AI'],['hist','History'],['bud','Budgets']].map(function(t){return'<button class="'+(tab===t[0]?'on':'')+'" onclick="tab=\''+t[0]+'\';draw();window.scrollTo(0,0)">'+t[1]+'</button>'}).join('')}
-function localLog(q){var al=[],t=q.toLowerCase(),mt=t.match(/(\d[\d,]*\.?\d*)/);if(!mt)return{t:'Try a message like \u201cSpent 35 on food\u201d or \u201cReceived 800 from Source 1\u201d.',al:al};var a=parseFloat(mt[1].replace(/,/g,''));if(!(a>0))return{t:'I could not read the amount.',al:al};var o={id:Date.now(),amt:a,date:new Date().toISOString().slice(0,10),note:q};
-if(/(received|earned|got paid|income|salary|paid me)/.test(t)){var k=0;S.src.forEach(function(n,j){if(t.indexOf(n.toLowerCase())>=0)k=j});o.src=k;S.inc.push(o);save();return{t:'Logged income '+money(a)+' from '+S.src[k]+'.',al:al}}
+var KW={Food:['food','lunch','dinner','breakfast','groceries','market','chop'],Transport:['transport','trotro','taxi','uber','bolt','fuel','bus'],Rent:['rent'],'Airtime and data':['airtime','data','credit'],'Church and giving':['church','tithe','offering','giving'],Bills:['bill','electricity','water','ecg'],Savings:['saving','savings']};
+function catOf(t){var c=null;CATS.forEach(function(n){if(t.indexOf(n.toLowerCase())>=0)c=n});Object.keys(KW).forEach(function(n){if(KW[n].some(function(w){return t.indexOf(w)>=0}))c=n});return c}
+function localAsk(q){var t=q.toLowerCase();if(!/\?|^\s*(how|what|which|show|tell|list|am i|do i|where|total|summary|balance)/.test(t))return null;
+var now=new Date(),mo=now.toISOString().slice(0,7),last=/last month/.test(t);if(last){var d=new Date(now.getFullYear(),now.getMonth()-1,1);mo=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')}
+var lab=last?'last month':'this month',I=sum(S.inc,mo),E=sum(S.exp,mo),c=catOf(t),ex=S.exp.filter(function(x){return x.date.slice(0,7)===mo});
+function tot(a){return a.reduce(function(s,x){return s+x.amt},0)}
+if(/(budget|limit)/.test(t)){var out=[];CATS.forEach(function(n){var b=S.bud[n];if(!b)return;var v=tot(ex.filter(function(x){return x.cat===n}));out.push(n+': '+money(v)+' of '+money(b)+' ('+Math.round(v/b*100)+'%)')});if(S.tot)out.push('Total spending: '+money(E)+' of '+money(S.tot)+' ('+Math.round(E/S.tot*100)+'%)');return out.length?'Budget status '+lab+':\n'+out.join('\n'):'You have not set any budgets yet. Open the Budgets tab to set them.'}
+if(/(biggest|highest|most|largest)/.test(t)&&/(spend|spent|expense|categor)/.test(t)){var by={};ex.forEach(function(x){by[x.cat]=(by[x.cat]||0)+x.amt});var k=Object.keys(by).sort(function(a,b){return by[b]-by[a]})[0];return k?'Your biggest spending category '+lab+' is '+k+' at '+money(by[k])+'.':'No spending recorded '+lab+'.'}
+if(/(left|remain|balance)/.test(t))return 'Income '+lab+': '+money(I)+'. Spent: '+money(E)+'. Left: '+money(I-E)+'.';
+if(/(earn|income|receiv|salary)/.test(t)){var s=null;S.src.forEach(function(n,j){if(t.indexOf(n.toLowerCase())>=0)s=j});var inc=S.inc.filter(function(x){return x.date.slice(0,7)===mo});if(s!==null)return S.src[s]+' '+lab+': '+money(tot(inc.filter(function(x){return x.src===s})))+'.';return 'Income '+lab+': '+money(I)+'.\n'+S.src.map(function(n,j){return n+': '+money(tot(inc.filter(function(x){return x.src===j})))}).join('\n')}
+if(/(spend|spent|expense|cost|paid)/.test(t)){if(c)return 'You spent '+money(tot(ex.filter(function(x){return x.cat===c})))+' on '+c+' '+lab+'.';return 'You spent '+money(E)+' '+lab+'.'}
+return 'I can answer questions like:\nHow much did I spend on food this month?\nHow much is left?\nHow much did I earn from Source 1?\nWhat is my biggest expense?\nHow are my budgets doing?'}
+function localLog(q){var qa=localAsk(q);if(qa)return{t:qa,al:[]};var al=[],t=q.toLowerCase(),t2=t,mt=(S.src.forEach(function(n){t2=t2.split(n.toLowerCase()).join(' ')}),t2.replace(/source\s*\d/g,' ').match(/(\d[\d,]*\.?\d*)/));if(!mt)return{t:'Try a message like \u201cSpent 35 on food\u201d or \u201cReceived 800 from Source 1\u201d.',al:al};var a=parseFloat(mt[1].replace(/,/g,''));if(!(a>0))return{t:'I could not read the amount.',al:al};var o={id:Date.now(),amt:a,date:new Date().toISOString().slice(0,10),note:q};
+if(/(received|earned|income|salary|bonus|deposit|credited|paid me|sent me|gave me|got paid|got \d|got gh)/.test(t)){var k=0;S.src.forEach(function(n,j){if(t.indexOf(n.toLowerCase())>=0)k=j});o.src=k;S.inc.push(o);save();return{t:'Logged income '+money(a)+' from '+S.src[k]+'.',al:al}}
 var map={Food:['food','lunch','dinner','breakfast','groceries','market','chop'],Transport:['transport','trotro','taxi','uber','bolt','fuel','bus'],Rent:['rent'],'Airtime and data':['airtime','data','credit'],'Church and giving':['church','tithe','offering','giving'],Bills:['bill','electricity','water','ecg'],Savings:['saving','savings']},c='Other';Object.keys(map).forEach(function(n){if(map[n].some(function(w){return t.indexOf(w)>=0}))c=n});o.cat=c;al=logExp(o);save();return{t:'Logged expense '+money(a)+' in '+c+'.',al:al}}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(function(){});
 draw();
